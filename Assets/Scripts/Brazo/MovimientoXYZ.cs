@@ -14,25 +14,22 @@ public class MovimientoXYZ : MonoBehaviour
     public KeyCode teclaNegativaZ = KeyCode.D; // Tecla para moverse en dirección negativa en el eje Z
     private Vector3 posicionAnterior;   
 
-    //public Transform base; // Referencia al objeto base (primera articulación)
-    public Transform shoulder; // Referencia al objeto shoulder (segunda articulación)
-    public Transform elbow; // Referencia al objeto elbow (tercera articulación)
-    public Transform wrist; // Referencia al objeto Wrist
-    private float baseLenght;
-    private float shoulderLenght;
-    private float elbowLenght;
-    private float wristLenght;
+    public Transform Base;
+    public float velocidadRotacionBase = 50.0f;
+    public float anguloLimiteNegativo = -125.0f;
+    public float anguloLimitePositivo = 125.0f;
+    private float Suma = 0.0f;
 
     void Start()
     {
         posicionAnterior = EndEffector.position;
-        SetLenghts();
     }
 
     // Update is called once per frame
     void Update()
     {
         MoverEndEffector();
+        MoverBase();
     }
 
     private void MoverEndEffector()
@@ -88,42 +85,59 @@ public class MovimientoXYZ : MonoBehaviour
 
         // La posición es diferente, guardar la nueva posición
         posicionAnterior = nuevaPosicion;
-
-        // Realizar la cinemática inversa para actualizar las articulaciones
-        //RealizarCinematicaInversa();
-        //SetDirections();
     }
 
-    private void RealizarCinematicaInversa()
+    private void MoverBase1()
     {
+
+        // Obtener la posición deseada del efector final en el plano XZ
+        Vector3 posicionDeseada = new Vector3(EndEffector.position.x, EndEffector.position.y, EndEffector.position.z);
+
+        // Calcular la dirección desde la base hacia la posición deseada
+        Vector3 direccionBaseObjetivo = (posicionDeseada - Base.position).normalized;
+
+        // Calcular el ángulo de rotación
+        float anguloRotacion = Mathf.Atan2(direccionBaseObjetivo.z, direccionBaseObjetivo.x) * Mathf.Rad2Deg;
+
+        // Calcular el punto fijo de rotación de la base
+        Vector3 puntoFijoBase = Base.position + direccionBaseObjetivo * 0.5f; // Ajusta la distancia según sea necesario
         
-    }
-
-    private void SetLenghts()
-    {
-        shoulderLenght = (elbow.position - shoulder.position).magnitude;
-        elbowLenght = (EndEffector.position - elbow.position).magnitude;
-    }
-
-    private void SetDirections()
-    {
-        float shoulderToWrist = (wrist.position - shoulder.position).magnitude;
-
-        float shoulderAngle = GetAngle(shoulderLenght, shoulderToWrist, elbowLenght);
-        float elbowAngle = GetAngle(elbowLenght, shoulderLenght,shoulderToWrist);
-
-        if (!float.IsNaN(shoulderAngle) && !float.IsNaN(elbowAngle))
+        // Calcular el ángulo de rotación limitado
+        /* float anguloRotacionLimitado = Mathf.Clamp(Suma, anguloLimiteNegativo, anguloLimitePositivo);
+        if(anguloRotacionLimitado == anguloLimiteNegativo)
         {
-            Quaternion shoulderRot = Quaternion.AngleAxis(-shoulderAngle,Vector3.forward);
-            shoulder.localRotation = shoulderRot;
-
-            Quaternion elbowRot = Quaternion.AngleAxis(180 - elbowAngle,Vector3.forward);
-            elbow.localRotation = elbowRot;
+            anguloRotacion = 0.0f;
         }
+
+        if(anguloRotacionLimitado == anguloLimitePositivo)
+        {
+            anguloRotacion = 0.0f;
+        } */
+        // Realizar la rotación alrededor del punto fijo
+        Base.RotateAround(Base.position, Base.up, anguloRotacion * Time.deltaTime * velocidadRotacionBase);
+        Suma += anguloRotacion;
+        Suma = Mathf.Clamp(Suma, anguloLimiteNegativo, anguloLimitePositivo);
     }
 
-    private float GetAngle (float a, float b, float c)
+    private void MoverBase()
     {
-        return Mathf.Acos((a * a + b * b - c * c) / (2 * a * b)) * Mathf.Rad2Deg;
+        // Obtener la posición actual del objeto de destino
+        Vector3 targetPosition = EndEffector.position;
+
+        // Ignorar el componente Y de la posición para mantener el objeto fijo en su plano actual
+        targetPosition.y = Base.position.y;
+
+        // Calcular la dirección hacia el objeto de destino
+        Vector3 direction = targetPosition - Base.position;
+
+        // Si hay alguna dirección de movimiento
+        if (direction.magnitude > 0.01f)
+        {
+            // Calcular la rotación necesaria para mirar en la dirección del objeto de destino
+            Quaternion targetRotation = Quaternion.LookRotation(direction);
+
+            // Interpolar suavemente hacia la rotación objetivo
+            Base.rotation = Quaternion.Slerp(Base.rotation, targetRotation, velocidadRotacionBase * Time.deltaTime);
+        }
     }
 }

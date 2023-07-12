@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class CinematicaInversa : MonoBehaviour
-{
+/*{
     //Variables de bones, huesos y punto de objetivo
      //[] Caja que guarda todas las bones
     [SerializeField]
@@ -137,18 +137,94 @@ public class CinematicaInversa : MonoBehaviour
                 bones[i].rotation = Quaternion.LookRotation(targetPosition.position - bones[i].position);
             }
         }
-
-        /* if(limitador != null)
-        {
-            for (int i = 1; i < bones.Length - 1; i++)
-            {
-                Plane projectionPlane = new Plane(bones[i + 1].position - bones[i - 1].position, bones[i - 1].position);
-                Vector3 projectedBonePosition = projectionPlane.ClosestPointOnPlane(bones[i].position);
-                Vector3 projectedPole = projectionPlane.ClosestPointOnPlane(limitador.position);
-                float angleOnPlane = Vector3.SignedAngle(projectedBonePosition - bones[i - 1].position, projectedPole - bones[i - 1].position, bones[i - 1].position);
-                bones[i].position = Quaternion.AngleAxis(angleOnPlane, projectionPlane.normal) * (bones[i].position - bones[i - 1].position);
-            }
-        } */
     }
 
+}
+{
+    public Transform pivot, upper, forearm, effector;
+    public Transform pole;
+
+    private float upperLength { get => (forearm.position - upper.position).magnitude; }
+    private float forearmLength { get => (effector.position - forearm.position).magnitude; }
+    private float upperToPoleLength { get => (pole.position - upper.position).magnitude; }
+
+    private void Update()
+    {
+        FacePivotToPole();
+
+        float upperAngle = GetAngleBetween(upperLength, upperToPoleLength, forearmLength);
+        float forearmAngle = GetAngleBetween(upperLength, forearmLength, upperToPoleLength);
+
+        if (!IsNan(upperAngle) && !IsNan(forearmAngle))
+        {
+            SetUpperBoneRot(upperAngle);
+            SetForearmBoneRot(forearmAngle);
+        }
+    }
+
+    public void FacePivotToPole() => pivot.rotation = Quaternion.LookRotation(pole.position - pivot.position);
+
+    public float GetAngleBetween(float _adyacentA, float _adyacentB, float _oposite)
+    {
+        return Mathf.Acos((Mathf.Pow(_adyacentA, 2) + Mathf.Pow(_adyacentB, 2) - Mathf.Pow(_oposite, 2))
+            / (2 * _adyacentA * _adyacentB)) * Mathf.Rad2Deg;
+    }
+
+    public bool IsNan(float _angle) => float.IsNaN(_angle);
+    public void SetUpperBoneRot(float _angle) => upper.localRotation = Quaternion.AngleAxis(-_angle, Vector3.right);
+    public void SetForearmBoneRot(float _angle) => forearm.localRotation = Quaternion.AngleAxis(180 - _angle, Vector3.right);
+}*/
+
+{
+    public Transform hombro;
+    public Transform codo;
+    public Transform muneca;
+    public Transform efectorFinal;
+
+    public float longitudHombro = 1.0f;
+    public float longitudCodo = 1.0f;
+    public float longitudMuneca = 1.0f;
+
+    private void Start()
+    {
+        CalcularCinematicaInversa();
+    }
+
+    private void CalcularCinematicaInversa()
+    {
+        // Obtener la posición deseada del efector final
+        Vector3 posicionDeseada = efectorFinal.position;
+
+        // Calcular la distancia desde el hombro hasta el objetivo
+        float distanciaObjetivo = Vector3.Distance(hombro.position, posicionDeseada);
+
+        // Verificar si el objetivo está fuera del alcance del brazo
+        if (distanciaObjetivo > longitudHombro + longitudCodo + longitudMuneca)
+        {
+            Debug.LogWarning("Objetivo fuera del alcance del brazo.");
+            return;
+        }
+
+        // Calcular el ángulo de la articulación del hombro
+        Vector3 direccionHombroObjetivo = (posicionDeseada - hombro.position).normalized;
+        float anguloHombro = Mathf.Atan2(direccionHombroObjetivo.y, direccionHombroObjetivo.x) * Mathf.Rad2Deg;
+
+        // Calcular la distancia horizontal desde el hombro hasta el objetivo
+        float distanciaHorizontal = Mathf.Min(distanciaObjetivo - longitudMuneca, longitudHombro + longitudCodo);
+
+        // Calcular la distancia vertical desde el hombro hasta el objetivo
+        float distanciaVertical = Mathf.Sqrt(Mathf.Pow(distanciaObjetivo, 2) - Mathf.Pow(distanciaHorizontal, 2));
+
+        // Calcular el ángulo del codo
+        float anguloCodo = Mathf.Atan2(distanciaVertical, distanciaHorizontal) * Mathf.Rad2Deg;
+
+        // Calcular el ángulo de la muñeca
+        Vector3 direccionMunecaObjetivo = (posicionDeseada - muneca.position).normalized;
+        float anguloMuneca = Mathf.Atan2(direccionMunecaObjetivo.y, direccionMunecaObjetivo.x) * Mathf.Rad2Deg;
+
+        // Aplicar los ángulos calculados a las articulaciones
+        hombro.rotation = Quaternion.Euler(0f, 0f, anguloHombro);
+        codo.rotation = Quaternion.Euler(0f, 0f, anguloCodo);
+        muneca.rotation = Quaternion.Euler(0f, 0f, anguloMuneca);
+    }
 }
