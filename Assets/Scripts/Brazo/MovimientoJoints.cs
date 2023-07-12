@@ -9,7 +9,9 @@ public class MovimientoJoints : MonoBehaviour
     public KeyCode teclaRotacionPositivaBase = KeyCode.Q; // Tecla para la rotación en dirección positiva
     public KeyCode teclaRotacionNegativaBase = KeyCode.A; // Tecla para la rotación en dirección negativa
     public Transform Base; // Transform del objeto que se va a rotar
-    private float anguloInicialBase; // Ángulo inicial del objeto
+    public float LimitePositivoBase = 125.0f; // Angulo limite del objeto
+    public float LimiteNegativoBase = -125.0f; // Angulo limite del objeto
+    private float sumaRotacionBase = 0.0f; // Suma de la rotacion del objeto para su uso en limites
 
     //Shoulder
     public float velocidadRotacionShoulder = 50.0f; // Velocidad de rotación
@@ -17,7 +19,9 @@ public class MovimientoJoints : MonoBehaviour
     public KeyCode teclaRotacionNegativaShoulder = KeyCode.S; // Tecla para la rotación en dirección negativa
     public Transform Shoulder; // Transform del objeto a rotar
     public Transform puntoFijoShoulder; // Transform del punto fijo alrededor del cual se realizará la rotación
-    private float anguloInicialShoulder; // Ángulo inicial del objeto
+    public float LimitePositivoShoulder = 10.0f; // Angulo limite del objeto
+    public float LimiteNegativoShoulder = -130.0f; // Angulo limite del objeto
+    private float sumaRotacionShoulder = 0.0f; // Suma de la rotacion del objeto para su uso en limites
 
     //Elbow
     public float velocidadRotacionElbow = 50.0f; // Velocidad de rotación
@@ -25,46 +29,70 @@ public class MovimientoJoints : MonoBehaviour
     public KeyCode teclaRotacionNegativaElbow = KeyCode.D; // Tecla para la rotación en dirección negativa
     public Transform Elbow; // Transform del objeto a rotar
     public Transform puntoFijoElbow; // Transform del punto fijo alrededor del cual se realizará la rotación
+    public float LimitePositivoElbow = 125.0f; // Angulo limite del objeto
+    public float LimiteNegativoElbow = -125.0f; // Angulo limite del objeto
+    private float sumaRotacionElbow = 0.0f; // Suma de la rotacion del objeto para su uso en limites
 
     //Wrist
     public float velocidadRotacionWrist = 50.0f; // Velocidad de rotación
     public KeyCode teclaRotacionPositivaWrist = KeyCode.R; // Tecla para la rotación en dirección positiva
     public KeyCode teclaRotacionNegativaWrist = KeyCode.F; // Tecla para la rotación en dirección negativa
     public Transform Wrist; // Transform del objeto a rotar
-    public Transform puntoFijoWrist; // Transform del punto fijo alrededor del cual se realizará la rotación
+    public float LimitePositivoWrist= 125.0f; // Angulo limite del objeto
+    public float LimiteNegativoWrist = -125.0f; // Angulo limite del objeto
+    private float sumaRotacionWrist = 0.0f; // Suma de la rotacion del objeto para su uso en limites
 
     //EndEffector
     public float velocidadRotacionEndEffector = 50.0f; // Velocidad de rotación
     public KeyCode teclaRotacionPositivaEndEffector = KeyCode.T; // Tecla para la rotación en dirección positiva
     public KeyCode teclaRotacionNegativaEndEffector = KeyCode.G; // Tecla para la rotación en dirección negativa
     public Transform EndEffector; // Transform del objeto a rotar
-    public Transform puntoFijoEndEffector; // Transform del punto fijo alrededor del cual se realizará la rotación
+    public float LimitePositivoEndEffector = 125.0f; // Angulo limite del objeto
+    public float LimiteNegativoEndEffector = -125.0f; // Angulo limite del objeto
+    private float sumaRotacionEndEffector = 0.0f; // Suma de la rotacion del objeto para su uso en limites
 
     private void Start()
     {
-        anguloInicialBase = Base.eulerAngles.y;
-        anguloInicialShoulder = Shoulder.localRotation.eulerAngles.z;
+        //Arreglando valores para Base
+        StartCoroutine(AdaptarAngulosCoroutine(LimitePositivoBase, valorAjustado =>{LimitePositivoBase = valorAjustado;}));
+        StartCoroutine(AdaptarAngulosCoroutine(LimiteNegativoBase, valorAjustado =>{LimiteNegativoBase = valorAjustado;}));
+
+        //Arreglando valores para Shoulder
+        StartCoroutine(AdaptarAngulosCoroutine(LimitePositivoShoulder, valorAjustado =>{LimitePositivoShoulder = valorAjustado;}));
+        StartCoroutine(AdaptarAngulosCoroutine(LimiteNegativoShoulder, valorAjustado =>{LimiteNegativoShoulder = valorAjustado;}));
+
+        //Arreglando valores para Elbow
+        StartCoroutine(AdaptarAngulosCoroutine(LimitePositivoElbow, valorAjustado =>{LimitePositivoElbow = valorAjustado;}));
+        StartCoroutine(AdaptarAngulosCoroutine(LimiteNegativoElbow, valorAjustado =>{LimiteNegativoElbow = valorAjustado;}));
+
+        //Arreglando valores para Wrist
+        StartCoroutine(AdaptarAngulosCoroutine(LimitePositivoWrist, valorAjustado =>{LimitePositivoWrist = valorAjustado;}));
+        StartCoroutine(AdaptarAngulosCoroutine(LimiteNegativoWrist, valorAjustado =>{LimiteNegativoWrist = valorAjustado;}));
+
+        //Arreglando valores para EndEffector
+        StartCoroutine(AdaptarAngulosCoroutine(LimitePositivoEndEffector, valorAjustado =>{LimitePositivoEndEffector = valorAjustado;}));
+        StartCoroutine(AdaptarAngulosCoroutine(LimiteNegativoEndEffector, valorAjustado =>{LimiteNegativoEndEffector = valorAjustado;}));
     }
 
     private void Update()
     {
-        MovimientoBase();
-        MovimientoShoulder();
-        MovimientoElbow();
-        MovimientoWrist();
-        MovimientoEndEffector();
+        Movimiento(Base, teclaRotacionPositivaBase, teclaRotacionNegativaBase, velocidadRotacionBase, LimitePositivoBase, LimiteNegativoBase, Base, Base.up, ref sumaRotacionBase);
+        Movimiento(Shoulder, teclaRotacionPositivaShoulder, teclaRotacionNegativaShoulder, velocidadRotacionShoulder, LimitePositivoShoulder, LimiteNegativoShoulder, puntoFijoShoulder, puntoFijoShoulder.forward, ref sumaRotacionShoulder);
+        Movimiento(Elbow, teclaRotacionPositivaElbow, teclaRotacionNegativaElbow, velocidadRotacionElbow, LimitePositivoElbow, LimiteNegativoElbow, puntoFijoElbow, puntoFijoElbow.forward, ref sumaRotacionElbow);
+        Movimiento(Wrist, teclaRotacionPositivaWrist, teclaRotacionNegativaWrist, velocidadRotacionWrist, LimitePositivoWrist, LimiteNegativoWrist, Wrist, Wrist.up, ref sumaRotacionWrist);
+        Movimiento(EndEffector, teclaRotacionPositivaEndEffector, teclaRotacionNegativaEndEffector, velocidadRotacionEndEffector, LimitePositivoEndEffector, LimiteNegativoEndEffector, EndEffector, EndEffector.up, ref sumaRotacionEndEffector);
     }
 
-    private void MovimientoBase()
+    private void Movimiento(Transform objeto, KeyCode TeclaPositiva, KeyCode TeclaNegativa, float VelocidadRotacion, float anguloLimitePositivo, float anguloLimiteNegativo, Transform puntoFijo, Vector3 direccion, ref float Suma)
     {
         // Obtener la dirección de rotación basada en las teclas presionadas
         float direccionRotacion = 0.0f;
 
-        if (Input.GetKey(teclaRotacionPositivaBase))
+        if (Input.GetKey(TeclaPositiva))
         {
             direccionRotacion = 1.0f;
         }
-        else if (Input.GetKey(teclaRotacionNegativaBase))
+        else if (Input.GetKey(TeclaNegativa))
         {
             direccionRotacion = -1.0f;
         }
@@ -76,130 +104,46 @@ public class MovimientoJoints : MonoBehaviour
         }
 
         // Calcular el ángulo de rotación
-        float anguloRotacion = direccionRotacion * velocidadRotacionBase * Time.deltaTime;
-
-        // Aplicar la rotación al objeto dentro del rango de límites
-        float nuevaRotacion = Base.eulerAngles.y + anguloRotacion;
-        nuevaRotacion = Mathf.Clamp(nuevaRotacion, anguloInicialBase - 125.0f, anguloInicialBase + 125.0f);
-        Base.eulerAngles = new Vector3(Base.eulerAngles.x, nuevaRotacion, Base.eulerAngles.z);
-    }
-
-    private void MovimientoShoulder()
-    {
-        // Obtener la dirección de rotación basada en las teclas presionadas
-        float direccionRotacion = 0.0f;
-
-        if (Input.GetKey(teclaRotacionPositivaShoulder))
-        {
-            direccionRotacion = 1.0f;
-        }
-        else if (Input.GetKey(teclaRotacionNegativaShoulder))
-        {
-            direccionRotacion = -1.0f;
-        }
-
-        // Verificar si no se están presionando teclas de rotación
-        if (direccionRotacion == 0.0f)
-        {
-            return;
-        }
-
-        // Calcular el ángulo de rotación
-        float anguloRotacion = direccionRotacion * velocidadRotacionShoulder * Time.deltaTime;
-
-        // Obtener el ángulo actual de rotación
-        float anguloActual = Shoulder.localRotation.eulerAngles.z;
-
-        // Calcular los límites de rotación basados en el ángulo inicial
-        float anguloLimitePositivo = anguloInicialShoulder + 10.0f;
-        float anguloLimiteNegativo = anguloInicialShoulder - 130.0f;
-
-        // Calcular el ángulo de rotación limitado
-        float anguloRotacionLimitado = Mathf.Clamp(anguloActual + anguloRotacion, anguloLimiteNegativo, anguloLimitePositivo) - anguloActual;
-
-        // Realizar la rotación alrededor del punto fijo
-        Shoulder.RotateAround(puntoFijoShoulder.position, puntoFijoShoulder.forward, anguloRotacionLimitado);
-    }
-
-    private void MovimientoElbow()
-    {
-        // Obtener la dirección de rotación basada en las teclas presionadas
-        float direccionRotacion = 0.0f;
-
-        if (Input.GetKey(teclaRotacionPositivaElbow))
-        {
-            direccionRotacion = 1.0f;
-        }
-        else if (Input.GetKey(teclaRotacionNegativaElbow))
-        {
-            direccionRotacion = -1.0f;
-        }
-
-        // Verificar si no se están presionando teclas de rotación
-        if (direccionRotacion == 0.0f)
-        {
-            return;
-        }
-
-        // Calcular el ángulo de rotación
-        float anguloRotacion = direccionRotacion * velocidadRotacionElbow * Time.deltaTime;
-
-        // Realizar la rotación alrededor del punto fijo
-        Elbow.RotateAround(puntoFijoElbow.position, puntoFijoElbow.forward, anguloRotacion);
+        float anguloRotacion = direccionRotacion * VelocidadRotacion * Time.deltaTime;
         
+        // Calcular el ángulo de rotación limitado
+        float anguloRotacionLimitado = Mathf.Clamp(Suma, anguloLimiteNegativo, anguloLimitePositivo);
+        if(anguloRotacionLimitado == anguloLimiteNegativo && direccionRotacion < 0)
+        {
+            anguloRotacion = 0.0f;
+        }
+
+        if(anguloRotacionLimitado == anguloLimitePositivo && direccionRotacion > 0)
+        {
+            anguloRotacion = 0.0f;
+        }
+        // Realizar la rotación alrededor del punto fijo
+        objeto.RotateAround(puntoFijo.position, direccion, anguloRotacion);
+        Suma += anguloRotacion;
+        Suma = Mathf.Clamp(Suma, anguloLimiteNegativo, anguloLimitePositivo);
     }
 
-    private void MovimientoWrist()
+    private IEnumerator AdaptarAngulosCoroutine(float angulo, System.Action<float> asignarValor)
     {
-        // Obtener la dirección de rotación basada en las teclas presionadas
-        float direccionRotacion = 0.0f;
-
-        if (Input.GetKey(teclaRotacionPositivaWrist))
+        while (true)
         {
-            direccionRotacion = 1.0f;
+            if (angulo > 360.0f)
+            {
+                angulo -= 360.0f;
+            }
+            if (angulo < -360.0f)
+            {
+                angulo += 360.0f;
+            }
+
+            // Verificar si el ángulo se ha ajustado correctamente
+            if (Mathf.Abs(angulo) <= 360.0f)
+            {
+                asignarValor(angulo); // Asignar el valor ajustado a la variable correspondiente
+                yield break; // Salir del coroutine cuando el ángulo esté ajustado
+            }
+
+            yield return null; // Pausar la ejecución hasta el siguiente frame
         }
-        else if (Input.GetKey(teclaRotacionNegativaWrist))
-        {
-            direccionRotacion = -1.0f;
-        }
-
-        // Verificar si no se están presionando teclas de rotación
-        if (direccionRotacion == 0.0f)
-        {
-            return;
-        }
-
-        // Calcular el ángulo de rotación
-        float anguloRotacion = direccionRotacion * velocidadRotacionWrist * Time.deltaTime;
-
-        // Realizar la rotación alrededor del punto fijo
-        Wrist.RotateAround(puntoFijoWrist.position, puntoFijoWrist.up, anguloRotacion);
-    }
-
-    private void MovimientoEndEffector()
-    {
-        // Obtener la dirección de rotación basada en las teclas presionadas
-        float direccionRotacion = 0.0f;
-
-        if (Input.GetKey(teclaRotacionPositivaEndEffector))
-        {
-            direccionRotacion = 1.0f;
-        }
-        else if (Input.GetKey(teclaRotacionNegativaEndEffector))
-        {
-            direccionRotacion = -1.0f;
-        }
-
-        // Verificar si no se están presionando teclas de rotación
-        if (direccionRotacion == 0.0f)
-        {
-            return;
-        }
-
-        // Calcular el ángulo de rotación
-        float anguloRotacion = direccionRotacion * velocidadRotacionEndEffector * Time.deltaTime;
-
-        // Realizar la rotación alrededor del punto fijo
-        EndEffector.RotateAround(puntoFijoEndEffector.position, puntoFijoEndEffector.up, anguloRotacion);
     }
 }
