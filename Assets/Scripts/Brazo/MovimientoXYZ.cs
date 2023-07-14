@@ -16,9 +16,15 @@ public class MovimientoXYZ : MonoBehaviour
 
     public Transform Base;
     public float velocidadRotacionBase = 50.0f;
-    public float anguloLimiteNegativo = -125.0f;
-    public float anguloLimitePositivo = 125.0f;
-    private float Suma = 0.0f;
+    public float anguloLimiteNegativoBase = -125.0f;
+    public float anguloLimitePositivoBase = 125.0f;
+    private float SumaBase = 0.0f;
+
+    public Transform Shoulder;
+    public float velocidadRotacionShoulder = 50.0f;
+    public float anguloLimiteNegativoShoulder = -125.0f;
+    public float anguloLimitePositivoShoulder = 125.0f;
+    private float SumaShoulder = 0.0f;
 
     void Start()
     {
@@ -30,6 +36,7 @@ public class MovimientoXYZ : MonoBehaviour
     {
         MoverEndEffector();
         MoverBase();
+        MoverShoulder();
     }
 
     private void MoverEndEffector()
@@ -115,8 +122,9 @@ public class MovimientoXYZ : MonoBehaviour
         } */
         // Realizar la rotación alrededor del punto fijo
         Base.RotateAround(Base.position, Base.up, anguloRotacion * Time.deltaTime * velocidadRotacionBase);
-        Suma += anguloRotacion;
-        Suma = Mathf.Clamp(Suma, anguloLimiteNegativo, anguloLimitePositivo);
+        SumaBase += anguloRotacion;
+        SumaBase = Mathf.Clamp(SumaBase, anguloLimiteNegativoBase, anguloLimitePositivoBase);
+        SumaShoulder = SumaBase;
     }
 
     private void MoverBase()
@@ -133,11 +141,52 @@ public class MovimientoXYZ : MonoBehaviour
         // Si hay alguna dirección de movimiento
         if (direction.magnitude > 0.01f)
         {
-            // Calcular la rotación necesaria para mirar en la dirección del objeto de destino
-            Quaternion targetRotation = Quaternion.LookRotation(direction);
+            // Invertir la dirección para que la base mire hacia el objeto de destino
+            direction *= -1f;
+
+            // Calcular el ángulo de rotación para alinear la base con la dirección invertida
+            float targetAngle = Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg;
+
+            // Crear una rotación objetivo a partir del ángulo calculado
+            Quaternion targetRotation = Quaternion.Euler(-180f, targetAngle -90f, 0f);
 
             // Interpolar suavemente hacia la rotación objetivo
             Base.rotation = Quaternion.Slerp(Base.rotation, targetRotation, velocidadRotacionBase * Time.deltaTime);
         }
     }
+
+    private void MoverShoulder()
+    {
+        // Obtener la posición actual del objeto de destino
+        Vector3 targetPosition = EndEffector.position;
+
+        // Ignorar el componente Y de la posición para mantener el objeto fijo en su plano actual
+        targetPosition.y = Shoulder.position.y;
+
+        // Calcular la dirección hacia el objeto de destino
+        Vector3 direction = targetPosition - Shoulder.position;
+
+        // Si hay alguna dirección de movimiento
+        if (direction.magnitude > 0.01f)
+        {
+            // Invertir la dirección para que la base mire hacia el objeto de destino
+            direction *= -1f;
+
+            // Calcular el ángulo de rotación para alinear la base con la dirección invertida
+            float targetAngle = Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg;
+
+            // Obtener el punto fijo de rotación para RotateAround
+            Vector3 pivotPoint = Shoulder.position + direction.normalized * 1;
+
+            // Calcular el ángulo de rotación actual de la base alrededor del punto fijo
+            float currentAngle = Quaternion.LookRotation(-direction).eulerAngles.y;
+
+            // Calcular el ángulo de rotación necesario para alcanzar el objetivo
+            float rotationAngle = targetAngle - currentAngle;
+
+            // Aplicar la rotación alrededor del punto fijo
+            Shoulder.RotateAround(pivotPoint, Vector3.up, rotationAngle);
+        }
+    }
+
 }

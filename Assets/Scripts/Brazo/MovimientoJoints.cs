@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class MovimientoJoints : MonoBehaviour
 {
@@ -9,8 +10,8 @@ public class MovimientoJoints : MonoBehaviour
     public KeyCode teclaRotacionPositivaBase = KeyCode.Q; // Tecla para la rotación en dirección positiva
     public KeyCode teclaRotacionNegativaBase = KeyCode.A; // Tecla para la rotación en dirección negativa
     public Transform Base; // Transform del objeto que se va a rotar
-    public float LimitePositivoBase = 125.0f; // Angulo limite del objeto
-    public float LimiteNegativoBase = -125.0f; // Angulo limite del objeto
+    private float LimitePositivoBase = 125.0f; // Angulo limite del objeto
+    private float LimiteNegativoBase = -125.0f; // Angulo limite del objeto
     private float sumaRotacionBase = 0.0f; // Suma de la rotacion del objeto para su uso en limites
 
     //Shoulder
@@ -19,8 +20,8 @@ public class MovimientoJoints : MonoBehaviour
     public KeyCode teclaRotacionNegativaShoulder = KeyCode.S; // Tecla para la rotación en dirección negativa
     public Transform Shoulder; // Transform del objeto a rotar
     public Transform puntoFijoShoulder; // Transform del punto fijo alrededor del cual se realizará la rotación
-    public float LimitePositivoShoulder = 10.0f; // Angulo limite del objeto
-    public float LimiteNegativoShoulder = -130.0f; // Angulo limite del objeto
+    private float LimitePositivoShoulder = 10.0f; // Angulo limite del objeto
+    private float LimiteNegativoShoulder = -130.0f; // Angulo limite del objeto
     private float sumaRotacionShoulder = 0.0f; // Suma de la rotacion del objeto para su uso en limites
 
     //Elbow
@@ -51,15 +52,34 @@ public class MovimientoJoints : MonoBehaviour
     public float LimiteNegativoEndEffector = -125.0f; // Angulo limite del objeto
     private float sumaRotacionEndEffector = 0.0f; // Suma de la rotacion del objeto para su uso en limites
 
+    //Diccionarios
+    private Dictionary<string, float> velocidades = new Dictionary<string,float>();
+    private Dictionary<string, float> limitesPositivos = new Dictionary<string,float>();
+    private Dictionary<string, float> limitesNegativos = new Dictionary<string,float>();
+    private Dictionary<string, Transform> objetos = new Dictionary<string,Transform>();
+    private Dictionary<string, Transform> puntoFijos = new Dictionary<string,Transform>();
+    private Dictionary<string, Vector3> rotaciones = new Dictionary<string,Vector3>();
+    private Dictionary<string, float> sumas = new Dictionary<string,float>();
+
+    //Botonera
+    private Transform objetoboton;
+    private float velocidadRotacionboton = 0f;
+    private float LimitePositivoboton = 0f;
+    private float LimiteNegativoboton = 0f;
+    private float sumaRotacionBoton = 0f;
+    private Transform puntoFijoBoton;
+    private Vector3 rotacionboton = Vector3.up;
+    private bool positivoboton = false;
+    private bool negativoboton = false;
+
     private void Start()
     {
         //Arreglando valores para Base
-        StartCoroutine(AdaptarAngulosCoroutine(LimitePositivoBase, valorAjustado =>{LimitePositivoBase = valorAjustado;}));
-        StartCoroutine(AdaptarAngulosCoroutine(LimiteNegativoBase, valorAjustado =>{LimiteNegativoBase = valorAjustado;}));
-
+        //StartCoroutine(AdaptarAngulosCoroutine(LimitePositivoBase, valorAjustado =>{LimitePositivoBase = valorAjustado;}));
+        //StartCoroutine(AdaptarAngulosCoroutine(LimiteNegativoBase, valorAjustado =>{LimiteNegativoBase = valorAjustado;}));
         //Arreglando valores para Shoulder
-        StartCoroutine(AdaptarAngulosCoroutine(LimitePositivoShoulder, valorAjustado =>{LimitePositivoShoulder = valorAjustado;}));
-        StartCoroutine(AdaptarAngulosCoroutine(LimiteNegativoShoulder, valorAjustado =>{LimiteNegativoShoulder = valorAjustado;}));
+        //StartCoroutine(AdaptarAngulosCoroutine(LimitePositivoShoulder, valorAjustado =>{LimitePositivoShoulder = valorAjustado;}));
+        //StartCoroutine(AdaptarAngulosCoroutine(LimiteNegativoShoulder, valorAjustado =>{LimiteNegativoShoulder = valorAjustado;}));
 
         //Arreglando valores para Elbow
         StartCoroutine(AdaptarAngulosCoroutine(LimitePositivoElbow, valorAjustado =>{LimitePositivoElbow = valorAjustado;}));
@@ -72,6 +92,49 @@ public class MovimientoJoints : MonoBehaviour
         //Arreglando valores para EndEffector
         StartCoroutine(AdaptarAngulosCoroutine(LimitePositivoEndEffector, valorAjustado =>{LimitePositivoEndEffector = valorAjustado;}));
         StartCoroutine(AdaptarAngulosCoroutine(LimiteNegativoEndEffector, valorAjustado =>{LimiteNegativoEndEffector = valorAjustado;}));
+
+        //Llenando diccionarios
+        velocidades["Base"] = velocidadRotacionBase;
+        velocidades["Shoulder"] = velocidadRotacionShoulder;
+        velocidades["Elbow"] = velocidadRotacionElbow;
+        velocidades["Wrist"] = velocidadRotacionWrist;
+        velocidades["EndEffector"] = velocidadRotacionEndEffector;
+
+        limitesPositivos["Base"] = LimitePositivoBase;
+        limitesPositivos["Shoulder"] = LimitePositivoShoulder;
+        limitesPositivos["Elbow"] = LimitePositivoElbow;
+        limitesPositivos["Wrist"] = LimitePositivoWrist;
+        limitesPositivos["EndEffector"] = LimitePositivoEndEffector;
+
+        limitesNegativos["Base"] = LimiteNegativoBase;
+        limitesNegativos["Shoulder"] = LimiteNegativoShoulder;
+        limitesNegativos["Elbow"] = LimiteNegativoElbow;
+        limitesNegativos["Wrist"] = LimiteNegativoWrist;
+        limitesNegativos["EndEffector"] = LimiteNegativoEndEffector;
+
+        objetos["Base"] = Base;
+        objetos["Shoulder"] = Shoulder;
+        objetos["Elbow"] = Elbow;
+        objetos["Wrist"] = Wrist;
+        objetos["EndEffector"] = EndEffector;
+
+        puntoFijos["Base"] = Base;
+        puntoFijos["Shoulder"] = Base;
+        puntoFijos["Elbow"] = Shoulder;
+        puntoFijos["Wrist"] = Wrist;
+        puntoFijos["EndEffector"] = EndEffector;
+
+        rotaciones["Base"] = Base.up;
+        rotaciones["Shoulder"] = Shoulder.forward;
+        rotaciones["Elbow"] = Elbow.forward;
+        rotaciones["Wrist"] = Wrist.up;
+        rotaciones["EndEffector"] = EndEffector.up;
+        
+        sumas["Base"] = 0;
+        sumas["Shoulder"] = 0;
+        sumas["Elbow"] = 0;
+        sumas["Wrist"] = 0;
+        sumas["EndEffector"] = 0;
     }
 
     private void Update()
@@ -81,8 +144,10 @@ public class MovimientoJoints : MonoBehaviour
         Movimiento(Elbow, teclaRotacionPositivaElbow, teclaRotacionNegativaElbow, velocidadRotacionElbow, LimitePositivoElbow, LimiteNegativoElbow, puntoFijoElbow, puntoFijoElbow.forward, ref sumaRotacionElbow);
         Movimiento(Wrist, teclaRotacionPositivaWrist, teclaRotacionNegativaWrist, velocidadRotacionWrist, LimitePositivoWrist, LimiteNegativoWrist, Wrist, Wrist.up, ref sumaRotacionWrist);
         Movimiento(EndEffector, teclaRotacionPositivaEndEffector, teclaRotacionNegativaEndEffector, velocidadRotacionEndEffector, LimitePositivoEndEffector, LimiteNegativoEndEffector, EndEffector, EndEffector.up, ref sumaRotacionEndEffector);
+    
+        MovimientoBoton(objetoboton,velocidadRotacionboton, LimitePositivoboton, LimiteNegativoboton, puntoFijoBoton, rotacionboton, sumaRotacionBoton);
     }
-
+ 
     private void Movimiento(Transform objeto, KeyCode TeclaPositiva, KeyCode TeclaNegativa, float VelocidadRotacion, float anguloLimitePositivo, float anguloLimiteNegativo, Transform puntoFijo, Vector3 direccion, ref float Suma)
     {
         // Obtener la dirección de rotación basada en las teclas presionadas
@@ -121,6 +186,96 @@ public class MovimientoJoints : MonoBehaviour
         objeto.RotateAround(puntoFijo.position, direccion, anguloRotacion);
         Suma += anguloRotacion;
         Suma = Mathf.Clamp(Suma, anguloLimiteNegativo, anguloLimitePositivo);
+        sumas[objeto.name] = Suma;
+    }
+
+    private void MovimientoBoton(Transform objeto, float VelocidadRotacion, float anguloLimitePositivo, float anguloLimiteNegativo, Transform puntoFijo, Vector3 direccion, float Suma)
+    {
+        // Obtener la dirección de rotación basada en las teclas presionadas
+        float direccionRotacion = 0.0f;
+
+        if (positivoboton)
+        {
+            direccionRotacion = 1.0f;
+        }
+        if (negativoboton)
+        {
+            direccionRotacion = -1.0f;
+        }
+
+        // Verificar si no se están presionando teclas de rotación
+        if (direccionRotacion == 0.0f)
+        {
+            return;
+        }
+
+        // Calcular el ángulo de rotación
+        float anguloRotacion = direccionRotacion * VelocidadRotacion * Time.deltaTime;
+        
+        // Calcular el ángulo de rotación limitado
+        float anguloRotacionLimitado = Mathf.Clamp(Suma, anguloLimiteNegativo, anguloLimitePositivo);
+        if(anguloRotacionLimitado == anguloLimiteNegativo && direccionRotacion < 0)
+        {
+            anguloRotacion = 0.0f;
+        }
+
+        if(anguloRotacionLimitado == anguloLimitePositivo && direccionRotacion > 0)
+        {
+            anguloRotacion = 0.0f;
+        }
+        // Realizar la rotación alrededor del punto fijo
+        objeto.RotateAround(puntoFijo.position, direccion, anguloRotacion);
+        Suma += anguloRotacion;
+        Suma = Mathf.Clamp(Suma, anguloLimiteNegativo, anguloLimitePositivo);
+        sumas[objeto.name] = Suma;
+    }
+
+    public void PointerUpPositivo(string nombre)
+    {
+        objetoboton = objetos[nombre];
+        velocidadRotacionboton = velocidades[nombre];
+        LimitePositivoboton = limitesPositivos[nombre];
+        LimiteNegativoboton = limitesNegativos[nombre];
+        puntoFijoBoton = puntoFijos[nombre];
+        rotacionboton = rotaciones[nombre];
+        sumaRotacionBoton = sumas[nombre];
+        positivoboton = false;
+    }
+
+    public void PointerDownPositivo(string nombre)
+    {
+        objetoboton = objetos[nombre];
+        velocidadRotacionboton = velocidades[nombre];
+        LimitePositivoboton = limitesPositivos[nombre];
+        LimiteNegativoboton = limitesNegativos[nombre];
+        puntoFijoBoton = puntoFijos[nombre];
+        rotacionboton = rotaciones[nombre];
+        sumaRotacionBoton = sumas[nombre];
+        positivoboton = true;
+    }
+
+    public void PointerUpNegativo(string nombre)
+    {
+        objetoboton = objetos[nombre];
+        velocidadRotacionboton = velocidades[nombre];
+        LimitePositivoboton = limitesPositivos[nombre];
+        LimiteNegativoboton = limitesNegativos[nombre];
+        puntoFijoBoton = puntoFijos[nombre];
+        rotacionboton = rotaciones[nombre];
+        sumaRotacionBoton = sumas[nombre];
+        negativoboton = false;
+    }
+
+    public void PointerDownNegativo(string nombre)
+    {
+        objetoboton = objetos[nombre];
+        velocidadRotacionboton = velocidades[nombre];
+        LimitePositivoboton = limitesPositivos[nombre];
+        LimiteNegativoboton = limitesNegativos[nombre];
+        puntoFijoBoton = puntoFijos[nombre];
+        rotacionboton = rotaciones[nombre];
+        sumaRotacionBoton = sumas[nombre];
+        negativoboton = true;
     }
 
     private IEnumerator AdaptarAngulosCoroutine(float angulo, System.Action<float> asignarValor)
