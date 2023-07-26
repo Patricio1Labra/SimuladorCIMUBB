@@ -95,7 +95,7 @@ public class MovimientoJointsIX : MonoBehaviour
         Movimiento(EndEffector, teclaRotacionPositivaEndEffector, teclaRotacionNegativaEndEffector, velocidadRotacionEndEffector, LimitePositivoEndEffector, LimiteNegativoEndEffector, puntoFijoEndEffector, EndEffector.right, ref sumaRotacionEndEffector);
         MovimientoBoton(nombreObjeto);
 
-        Pinzas(Prong, teclaProng);
+        //Pinzas(Prong, teclaProng);
         
     }
  

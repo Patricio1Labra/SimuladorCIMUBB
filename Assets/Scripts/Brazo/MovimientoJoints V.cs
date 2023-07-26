@@ -62,38 +62,35 @@ public class MovimientoJointsV : MonoBehaviour
     private bool positivoboton = false;
     private bool negativoboton = false;
 
+    private bool isControlPressed = false;
+    private bool isAltPressed = false;
+
+    private Dictionary<int, float> GuardarBase = new Dictionary<int, float>();
+    private Dictionary<int, float> GuardarShoulder = new Dictionary<int, float>();
+    private Dictionary<int, float> GuardarElbow = new Dictionary<int, float>();
+    private Dictionary<int, float> GuardarWrist = new Dictionary<int, float>();
+    private Dictionary<int, float> GuardarEndEffector = new Dictionary<int, float>();
+
     private void Start()
     {
-        //Arreglando valores para Base
-        //StartCoroutine(AdaptarAngulosCoroutine(LimitePositivoBase, valorAjustado =>{LimitePositivoBase = valorAjustado;}));
-        //StartCoroutine(AdaptarAngulosCoroutine(LimiteNegativoBase, valorAjustado =>{LimiteNegativoBase = valorAjustado;}));
-        //Arreglando valores para Shoulder
-        //StartCoroutine(AdaptarAngulosCoroutine(LimitePositivoShoulder, valorAjustado =>{LimitePositivoShoulder = valorAjustado;}));
-        //StartCoroutine(AdaptarAngulosCoroutine(LimiteNegativoShoulder, valorAjustado =>{LimiteNegativoShoulder = valorAjustado;}));
-
-        //Arreglando valores para Elbow
-        //StartCoroutine(AdaptarAngulosCoroutine(LimitePositivoElbow, valorAjustado =>{LimitePositivoElbow = valorAjustado;}));
-        //StartCoroutine(AdaptarAngulosCoroutine(LimiteNegativoElbow, valorAjustado =>{LimiteNegativoElbow = valorAjustado;}));
-
-        //Arreglando valores para Wrist
-        //StartCoroutine(AdaptarAngulosCoroutine(LimitePositivoWrist, valorAjustado =>{LimitePositivoWrist = valorAjustado;}));
-        //StartCoroutine(AdaptarAngulosCoroutine(LimiteNegativoWrist, valorAjustado =>{LimiteNegativoWrist = valorAjustado;}));
-
-        //Arreglando valores para EndEffector
-        //StartCoroutine(AdaptarAngulosCoroutine(LimitePositivoEndEffector, valorAjustado =>{LimitePositivoEndEffector = valorAjustado;}));
-        //StartCoroutine(AdaptarAngulosCoroutine(LimiteNegativoEndEffector, valorAjustado =>{LimiteNegativoEndEffector = valorAjustado;}));
+        GuardarBase.Add(0, 0f);
+        GuardarShoulder.Add(0,0f);
+        GuardarElbow.Add(0,0f);
+        GuardarWrist.Add(0,0f);
+        GuardarEndEffector.Add(0,0f);
     }
 
     private void Update()
     {
-        Movimiento(Base, teclaRotacionPositivaBase, teclaRotacionNegativaBase, velocidadRotacionBase, LimitePositivoBase, LimiteNegativoBase, Base, Base.up, ref sumaRotacionBase);
+        Movimiento(Base, teclaRotacionPositivaBase, teclaRotacionNegativaBase, velocidadRotacionBase, LimitePositivoBase, LimiteNegativoBase, Base, -Base.up, ref sumaRotacionBase);
         Movimiento(Shoulder, teclaRotacionPositivaShoulder, teclaRotacionNegativaShoulder, velocidadRotacionShoulder, LimitePositivoShoulder, LimiteNegativoShoulder, puntoFijoShoulder, puntoFijoShoulder.forward, ref sumaRotacionShoulder);
         Movimiento(Elbow, teclaRotacionPositivaElbow, teclaRotacionNegativaElbow, velocidadRotacionElbow, LimitePositivoElbow, LimiteNegativoElbow, puntoFijoElbow, puntoFijoElbow.forward, ref sumaRotacionElbow);
         Movimiento(Wrist, teclaRotacionPositivaWrist, teclaRotacionNegativaWrist, velocidadRotacionWrist, LimitePositivoWrist, LimiteNegativoWrist, Wrist, Wrist.up, ref sumaRotacionWrist);
         Movimiento(EndEffector, teclaRotacionPositivaEndEffector, teclaRotacionNegativaEndEffector, velocidadRotacionEndEffector, LimitePositivoEndEffector, LimiteNegativoEndEffector, EndEffector, EndEffector.up, ref sumaRotacionEndEffector);
         MovimientoBoton(nombreObjeto);
-
-        Pinzas(Prong, teclaProng);
+        Guardar();
+        Usar();
+        //Pinzas(Prong, teclaProng);
         
     }
  
@@ -305,27 +302,189 @@ public class MovimientoJointsV : MonoBehaviour
         negativoboton = true;
     }
 
-    private IEnumerator AdaptarAngulosCoroutine(float angulo, System.Action<float> asignarValor)
+    private void Guardar()
     {
-        while (true)
+        // Verificar si se presionó la tecla de control (Ctrl)
+        if (Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl))
         {
-            if (angulo > 360.0f)
-            {
-                angulo -= 360.0f;
-            }
-            if (angulo < -360.0f)
-            {
-                angulo += 360.0f;
-            }
-
-            // Verificar si el ángulo se ha ajustado correctamente
-            if (Mathf.Abs(angulo) <= 360.0f)
-            {
-                asignarValor(angulo); // Asignar el valor ajustado a la variable correspondiente
-                yield break; // Salir del coroutine cuando el ángulo esté ajustado
-            }
-
-            yield return null; // Pausar la ejecución hasta el siguiente frame
+            isControlPressed = true;
         }
+
+        // Verificar si está habilitado el registro de teclas
+        if (isControlPressed)
+        {
+            // Verificar las teclas numéricas del 1 al 9
+            for (int i = 1; i <= 9; i++)
+            {
+                if (Input.GetKey(i.ToString()))
+                {
+                    SaveInformation(i);
+                    isControlPressed = false;
+                }
+            }
+        }
+    }
+
+    private void Usar()
+    {
+        // Verificar si se presionó la tecla de control (Ctrl)
+        if (Input.GetKey(KeyCode.LeftAlt) || Input.GetKey(KeyCode.RightAlt))
+        {
+            isAltPressed = true;
+        }
+
+        // Verificar si está habilitado el registro de teclas
+        if (isAltPressed)
+        {
+            // Verificar las teclas numéricas del 0 al 9
+            for (int i = 0; i <= 9; i++)
+            {
+                if (Input.GetKey(i.ToString()))
+                {
+                    GetInformation(i);
+                    isAltPressed = false;
+                }
+            }
+        }
+    }
+
+    private void SaveInformation(int i)
+    {
+        if (GuardarBase.ContainsKey(i))
+        {
+            GuardarBase[i] = sumaRotacionBase;
+        }
+        else
+        {
+            GuardarBase.Add(i,sumaRotacionBase);
+        }
+
+        if (GuardarShoulder.ContainsKey(i))
+        {
+            GuardarShoulder[i] = sumaRotacionShoulder;
+        }
+        else
+        {
+            GuardarShoulder.Add(i, sumaRotacionShoulder);
+        }
+
+        if (GuardarElbow.ContainsKey(i))
+        {
+            GuardarElbow[i] = sumaRotacionElbow;
+        }
+        else
+        {
+            GuardarElbow.Add(i, sumaRotacionElbow);
+        }
+
+        if (GuardarWrist.ContainsKey(i))
+        {
+            GuardarWrist[i] = sumaRotacionWrist;
+        }
+        else
+        {
+            GuardarWrist.Add(i, sumaRotacionWrist);
+        }
+
+        if (GuardarEndEffector.ContainsKey(i))
+        {
+            GuardarEndEffector[i] = sumaRotacionEndEffector;
+        }
+        else
+        {
+            GuardarEndEffector.Add(i, sumaRotacionEndEffector);
+        }
+    }
+
+    private void GetInformation(int i)
+    {
+        if (GuardarBase.ContainsKey(i))
+        {
+            float value = GuardarBase[i];
+            //MoverGuardado(value,sumaRotacionBase,Base,Base,LimiteNegativoBase,LimitePositivoBase,velocidadRotacionBase,-Base.up);
+        }
+        else
+        {
+            Debug.Log("no existe");
+        }
+
+        if (GuardarShoulder.ContainsKey(i))
+        {
+            float value = GuardarShoulder[i];
+            Debug.Log("Shoulder "+ i + " = " + value);
+        }
+        else
+        {
+            Debug.Log("no existe");
+        }
+
+        if (GuardarElbow.ContainsKey(i))
+        {
+            float value = GuardarElbow[i];
+            Debug.Log("Elbow "+ i + " = " + value);
+        }
+        else
+        {
+            Debug.Log("no existe");
+        }
+
+        if (GuardarWrist.ContainsKey(i))
+        {
+            float value = GuardarWrist[i];
+            Debug.Log("Wrist "+ i + " = " + value);
+        }
+        else
+        {
+            Debug.Log("no existe");
+        }
+
+        if (GuardarEndEffector.ContainsKey(i))
+        {
+            float value = GuardarEndEffector[i];
+            Debug.Log("EndEffector "+ i + " = " + value);
+        }
+        else
+        {
+            Debug.Log("no existe");
+        }
+    }
+
+    private void MoverGuardado(float valor, float Suma, Transform puntoFijo, Transform objeto, float anguloLimiteNegativo, float anguloLimitePositivo, float VelocidadRotacion, Vector3 direccion)
+    {
+        
+        float direccionRotacion = 0.0f;
+
+        if (Suma < valor)
+        {
+            direccionRotacion = 1.0f;
+        }
+        else if (Suma > valor)
+        {
+            direccionRotacion = -1.0f;
+        }
+
+        if (direccionRotacion == 0.0f)
+        {
+            return;
+        }
+        // Calcular el ángulo de rotación
+        
+        // Realizar la rotación alrededor del punto fijo
+        while(Suma != valor)
+        {
+            float anguloRotacion = direccionRotacion * VelocidadRotacion * Time.deltaTime;
+            objeto.RotateAround(puntoFijo.position, direccion, anguloRotacion);
+            Suma += anguloRotacion;
+            if(direccionRotacion == 1.0f)
+            {
+                Suma = Mathf.Clamp(Suma, anguloLimiteNegativo, valor);
+            }
+            else
+            {
+                Suma = Mathf.Clamp(Suma, valor, anguloLimitePositivo);
+            }
+            
+        }
+        
     }
 }
