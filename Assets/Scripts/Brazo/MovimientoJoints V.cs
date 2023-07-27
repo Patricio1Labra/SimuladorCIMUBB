@@ -52,11 +52,6 @@ public class MovimientoJointsV : MonoBehaviour
     private float LimiteNegativoEndEffector = -570.0f; // Angulo limite del objeto
     private float sumaRotacionEndEffector = 0.0f; // Suma de la rotacion del objeto para su uso en limites
 
-    //Prong
-    public float velocidadRotacionProng = 50.0f; // Velocidad de rotación
-    public KeyCode teclaProng = KeyCode.Z; // Tecla para la rotación en dirección positiva
-    public Transform Prong; // Transform del objeto a rotar
-
     //Botonera
     private string nombreObjeto = "";
     private bool positivoboton = false;
@@ -90,7 +85,6 @@ public class MovimientoJointsV : MonoBehaviour
         MovimientoBoton(nombreObjeto);
         Guardar();
         Usar();
-        //Pinzas(Prong, teclaProng);
         
     }
  
@@ -262,21 +256,6 @@ public class MovimientoJointsV : MonoBehaviour
         
     }
 
-    private void Pinzas(Transform pinzas, KeyCode TeclaAlternar)
-    {
-        bool tecla = false;
-        if (Input.GetKey(TeclaAlternar))
-        {
-            tecla = true;
-        }
-        if(!tecla)
-        {
-            return;
-        }
-        Vector3 finalPos = pinzas.localPosition + new Vector3(0f, 0f, -2.95f);
-        pinzas.localPosition = Vector3.Lerp(pinzas.localPosition, finalPos, Time.deltaTime);
-        
-    }
     public void PointerUpPositivo(string nombre)
     {
         nombreObjeto = nombre;
@@ -401,6 +380,7 @@ public class MovimientoJointsV : MonoBehaviour
         if (GuardarBase.ContainsKey(i))
         {
             float value = GuardarBase[i];
+            Debug.Log("Base "+ i + " = " + value);
             //MoverGuardado(value,sumaRotacionBase,Base,Base,LimiteNegativoBase,LimitePositivoBase,velocidadRotacionBase,-Base.up);
         }
         else
