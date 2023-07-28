@@ -60,6 +60,12 @@ public class MovimientoJointsV : MonoBehaviour
     private bool isControlPressed = false;
     private bool isAltPressed = false;
 
+    private bool EmpezarGuardar = false;
+    private bool TerminarGuardar = false;
+    private bool EmpezarMover = false;
+    private bool TerminarMover = false;
+    private int NumeroUsar = -1;
+
     private Dictionary<int, float> GuardarBase = new Dictionary<int, float>();
     private Dictionary<int, float> GuardarShoulder = new Dictionary<int, float>();
     private Dictionary<int, float> GuardarElbow = new Dictionary<int, float>();
@@ -85,6 +91,8 @@ public class MovimientoJointsV : MonoBehaviour
         MovimientoBoton(nombreObjeto);
         Guardar();
         Usar();
+        GuardarBoton();
+        UsarBoton();
         
     }
  
@@ -304,6 +312,22 @@ public class MovimientoJointsV : MonoBehaviour
         }
     }
 
+    private void GuardarBoton()
+    {
+        // Verificar si se presionó el boton
+        if (EmpezarGuardar)
+        {
+            // Verificar si se habilita el guardado
+            if (TerminarGuardar)
+            {
+                SaveInformation(NumeroUsar);
+                TerminarGuardar = false;
+                EmpezarGuardar = false;
+                NumeroUsar = -1;
+            }
+        }     
+    }
+
     private void Usar()
     {
         // Verificar si se presionó la tecla de control (Ctrl)
@@ -323,6 +347,22 @@ public class MovimientoJointsV : MonoBehaviour
                     GetInformation(i);
                     isAltPressed = false;
                 }
+            }
+        }
+    }
+
+    private void UsarBoton()
+    {
+        // Verificar si se presionó el boton
+        if (EmpezarMover)
+        {
+            // Verificar si se habilita el guardado
+            if (TerminarMover)
+            {
+                GetInformation(NumeroUsar);
+                TerminarMover = false;
+                EmpezarMover = false;
+                NumeroUsar = -1;
             }
         }
     }
@@ -426,6 +466,47 @@ public class MovimientoJointsV : MonoBehaviour
         else
         {
             Debug.Log("no existe");
+        }
+    }
+
+    public void EmpezarAGuardar()
+    {
+        EmpezarGuardar = true;
+    }
+
+    public void NumeroAUsar(int i)
+    {
+        if(EmpezarGuardar || EmpezarMover)
+        {
+            NumeroUsar = i;
+        }
+    }
+
+    public void TerminarAGuardar()
+    {
+        if(0 < NumeroUsar && NumeroUsar < 10)
+        {
+            if(EmpezarGuardar)
+            {
+                TerminarGuardar = true;
+            }
+        }
+    }
+
+    public void EmpezarAMover()
+    {
+        EmpezarMover = true;
+    }
+
+    public void TerminarAMover()
+    {
+        if(-1 < NumeroUsar && NumeroUsar < 10)
+        {
+            if(EmpezarMover)
+            {
+                TerminarMover = true;
+            }
+            
         }
     }
 

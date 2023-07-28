@@ -10,8 +10,8 @@ public class MovimientoJointsVz : MonoBehaviour
     public KeyCode teclaRotacionPositivaBase = KeyCode.Q; // Tecla para la rotación en dirección positiva
     public KeyCode teclaRotacionNegativaBase = KeyCode.A; // Tecla para la rotación en dirección negativa
     public Transform Base; // Transform del objeto que se va a rotar
-    private float LimitePositivoBase = 125.0f; // Angulo limite del objeto
-    private float LimiteNegativoBase = -125.0f; // Angulo limite del objeto
+    private float LimitePositivoBase = 155.0f; // Angulo limite del objeto
+    private float LimiteNegativoBase = -155.0f; // Angulo limite del objeto
     private float sumaRotacionBase = 0.0f; // Suma de la rotacion del objeto para su uso en limites
 
     //Shoulder
@@ -30,8 +30,8 @@ public class MovimientoJointsVz : MonoBehaviour
     public KeyCode teclaRotacionNegativaElbow = KeyCode.D; // Tecla para la rotación en dirección negativa
     public Transform Elbow; // Transform del objeto a rotar
     public Transform puntoFijoElbow; // Transform del punto fijo alrededor del cual se realizará la rotación
-    private float LimitePositivoElbow = 250.0f; // Angulo limite del objeto
-    private float LimiteNegativoElbow = -70.0f; // Angulo limite del objeto
+    private float LimitePositivoElbow = 130.0f; // Angulo limite del objeto
+    private float LimiteNegativoElbow = -130.0f; // Angulo limite del objeto
     private float sumaRotacionElbow = 0.0f; // Suma de la rotacion del objeto para su uso en limites
 
     //Wrist
@@ -39,8 +39,8 @@ public class MovimientoJointsVz : MonoBehaviour
     public KeyCode teclaRotacionPositivaWrist = KeyCode.R; // Tecla para la rotación en dirección positiva
     public KeyCode teclaRotacionNegativaWrist = KeyCode.F; // Tecla para la rotación en dirección negativa
     public Transform Wrist; // Transform del objeto a rotar
-    public float LimitePositivoWrist= 125.0f; // Angulo limite del objeto
-    public float LimiteNegativoWrist = -125.0f; // Angulo limite del objeto
+    private float LimitePositivoWrist= 130.0f; // Angulo limite del objeto
+    private float LimiteNegativoWrist = -130.0f; // Angulo limite del objeto
     private float sumaRotacionWrist = 0.0f; // Suma de la rotacion del objeto para su uso en limites
 
     //EndEffector
@@ -48,52 +48,55 @@ public class MovimientoJointsVz : MonoBehaviour
     public KeyCode teclaRotacionPositivaEndEffector = KeyCode.T; // Tecla para la rotación en dirección positiva
     public KeyCode teclaRotacionNegativaEndEffector = KeyCode.G; // Tecla para la rotación en dirección negativa
     public Transform EndEffector; // Transform del objeto a rotar
-    public float LimitePositivoEndEffector = 125.0f; // Angulo limite del objeto
-    public float LimiteNegativoEndEffector = -125.0f; // Angulo limite del objeto
+    private float LimitePositivoEndEffector = 570.0f; // Angulo limite del objeto
+    private float LimiteNegativoEndEffector = -570.0f; // Angulo limite del objeto
     private float sumaRotacionEndEffector = 0.0f; // Suma de la rotacion del objeto para su uso en limites
-
-    //Prong
-    public float velocidadRotacionProng = 50.0f; // Velocidad de rotación
-    public KeyCode teclaProng = KeyCode.Z; // Tecla para la rotación en dirección positiva
-    public Transform Prong; // Transform del objeto a rotar
 
     //Botonera
     private string nombreObjeto = "";
     private bool positivoboton = false;
     private bool negativoboton = false;
+    private bool positivobotonZ = false;
+    private bool negativobotonZ = false;
+
+    private bool isControlPressed = false;
+    private bool isAltPressed = false;
+
+    private bool EmpezarGuardar = false;
+    private bool TerminarGuardar = false;
+    private bool EmpezarMover = false;
+    private bool TerminarMover = false;
+    private int NumeroUsar = -1;
+
+    private Dictionary<int, float> GuardarBase = new Dictionary<int, float>();
+    private Dictionary<int, float> GuardarShoulder = new Dictionary<int, float>();
+    private Dictionary<int, float> GuardarElbow = new Dictionary<int, float>();
+    private Dictionary<int, float> GuardarWrist = new Dictionary<int, float>();
+    private Dictionary<int, float> GuardarEndEffector = new Dictionary<int, float>();
 
     private void Start()
     {
-        //Arreglando valores para Base
-        //StartCoroutine(AdaptarAngulosCoroutine(LimitePositivoBase, valorAjustado =>{LimitePositivoBase = valorAjustado;}));
-        //StartCoroutine(AdaptarAngulosCoroutine(LimiteNegativoBase, valorAjustado =>{LimiteNegativoBase = valorAjustado;}));
-        //Arreglando valores para Shoulder
-        //StartCoroutine(AdaptarAngulosCoroutine(LimitePositivoShoulder, valorAjustado =>{LimitePositivoShoulder = valorAjustado;}));
-        //StartCoroutine(AdaptarAngulosCoroutine(LimiteNegativoShoulder, valorAjustado =>{LimiteNegativoShoulder = valorAjustado;}));
-
-        //Arreglando valores para Elbow
-        StartCoroutine(AdaptarAngulosCoroutine(LimitePositivoElbow, valorAjustado =>{LimitePositivoElbow = valorAjustado;}));
-        StartCoroutine(AdaptarAngulosCoroutine(LimiteNegativoElbow, valorAjustado =>{LimiteNegativoElbow = valorAjustado;}));
-
-        //Arreglando valores para Wrist
-        StartCoroutine(AdaptarAngulosCoroutine(LimitePositivoWrist, valorAjustado =>{LimitePositivoWrist = valorAjustado;}));
-        StartCoroutine(AdaptarAngulosCoroutine(LimiteNegativoWrist, valorAjustado =>{LimiteNegativoWrist = valorAjustado;}));
-
-        //Arreglando valores para EndEffector
-        StartCoroutine(AdaptarAngulosCoroutine(LimitePositivoEndEffector, valorAjustado =>{LimitePositivoEndEffector = valorAjustado;}));
-        StartCoroutine(AdaptarAngulosCoroutine(LimiteNegativoEndEffector, valorAjustado =>{LimiteNegativoEndEffector = valorAjustado;}));
+        GuardarBase.Add(0, 0f);
+        GuardarShoulder.Add(0,0f);
+        GuardarElbow.Add(0,0f);
+        GuardarWrist.Add(0,0f);
+        GuardarEndEffector.Add(0,0f);
     }
 
     private void Update()
     {
-        Movimiento(Base, teclaRotacionPositivaBase, teclaRotacionNegativaBase, velocidadRotacionBase, LimitePositivoBase, LimiteNegativoBase, Base, Base.up, ref sumaRotacionBase);
+        Movimiento(Base, teclaRotacionPositivaBase, teclaRotacionNegativaBase, velocidadRotacionBase, LimitePositivoBase, LimiteNegativoBase, Base, -Base.up, ref sumaRotacionBase);
         Movimiento(Shoulder, teclaRotacionPositivaShoulder, teclaRotacionNegativaShoulder, velocidadRotacionShoulder, LimitePositivoShoulder, LimiteNegativoShoulder, puntoFijoShoulder, puntoFijoShoulder.forward, ref sumaRotacionShoulder);
         Movimiento(Elbow, teclaRotacionPositivaElbow, teclaRotacionNegativaElbow, velocidadRotacionElbow, LimitePositivoElbow, LimiteNegativoElbow, puntoFijoElbow, puntoFijoElbow.forward, ref sumaRotacionElbow);
         Movimiento(Wrist, teclaRotacionPositivaWrist, teclaRotacionNegativaWrist, velocidadRotacionWrist, LimitePositivoWrist, LimiteNegativoWrist, Wrist, Wrist.up, ref sumaRotacionWrist);
         Movimiento(EndEffector, teclaRotacionPositivaEndEffector, teclaRotacionNegativaEndEffector, velocidadRotacionEndEffector, LimitePositivoEndEffector, LimiteNegativoEndEffector, EndEffector, EndEffector.up, ref sumaRotacionEndEffector);
         MovimientoBoton(nombreObjeto);
-
-        Pinzas(Prong, teclaProng);
+        Guardar();
+        Usar();
+        GuardarBoton();
+        UsarBoton();
+        MoverEje();
+        MoverEjeBoton();
         
     }
  
@@ -265,21 +268,6 @@ public class MovimientoJointsVz : MonoBehaviour
         
     }
 
-    private void Pinzas(Transform pinzas, KeyCode TeclaAlternar)
-    {
-        bool tecla = false;
-        if (Input.GetKey(TeclaAlternar))
-        {
-            tecla = true;
-        }
-        if(!tecla)
-        {
-            return;
-        }
-        Vector3 finalPos = pinzas.localPosition + new Vector3(0f, 0f, -2.95f);
-        pinzas.localPosition = Vector3.Lerp(pinzas.localPosition, finalPos, Time.deltaTime);
-        
-    }
     public void PointerUpPositivo(string nombre)
     {
         nombreObjeto = nombre;
@@ -305,27 +293,332 @@ public class MovimientoJointsVz : MonoBehaviour
         negativoboton = true;
     }
 
-    private IEnumerator AdaptarAngulosCoroutine(float angulo, System.Action<float> asignarValor)
+    public void PointerUpPositivoZ()
     {
-        while (true)
+        if(!EmpezarGuardar && !EmpezarMover)
         {
-            if (angulo > 360.0f)
-            {
-                angulo -= 360.0f;
-            }
-            if (angulo < -360.0f)
-            {
-                angulo += 360.0f;
-            }
-
-            // Verificar si el ángulo se ha ajustado correctamente
-            if (Mathf.Abs(angulo) <= 360.0f)
-            {
-                asignarValor(angulo); // Asignar el valor ajustado a la variable correspondiente
-                yield break; // Salir del coroutine cuando el ángulo esté ajustado
-            }
-
-            yield return null; // Pausar la ejecución hasta el siguiente frame
+            positivobotonZ = false;
         }
+    }
+
+    public void PointerDownPositivoZ()
+    {
+        if(!EmpezarGuardar && !EmpezarMover)
+        {
+            positivobotonZ = true;
+        }
+    }
+
+    public void PointerUpNegativoZ()
+    {
+        if(!EmpezarGuardar && !EmpezarMover)
+        {
+            negativobotonZ = false;
+        }
+    }
+
+    public void PointerDownNegativoZ()
+    {
+        if(!EmpezarGuardar && !EmpezarMover)
+        {
+            negativobotonZ = true;
+        }
+    }
+
+    private void Guardar()
+    {
+        // Verificar si se presionó la tecla de control (Ctrl)
+        if (Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl))
+        {
+            isControlPressed = true;
+        }
+
+        // Verificar si está habilitado el registro de teclas
+        if (isControlPressed)
+        {
+            // Verificar las teclas numéricas del 1 al 9
+            for (int i = 1; i <= 9; i++)
+            {
+                if (Input.GetKey(i.ToString()))
+                {
+                    SaveInformation(i);
+                    isControlPressed = false;
+                }
+            }
+        }
+    }
+
+    private void GuardarBoton()
+    {
+        // Verificar si se presionó el boton
+        if (EmpezarGuardar)
+        {
+            // Verificar si se habilita el guardado
+            if (TerminarGuardar)
+            {
+                SaveInformation(NumeroUsar);
+                TerminarGuardar = false;
+                EmpezarGuardar = false;
+                NumeroUsar = -1;
+            }
+        }     
+    }
+
+    private void Usar()
+    {
+        // Verificar si se presionó la tecla de control (Ctrl)
+        if (Input.GetKey(KeyCode.LeftAlt) || Input.GetKey(KeyCode.RightAlt))
+        {
+            isAltPressed = true;
+        }
+
+        // Verificar si está habilitado el registro de teclas
+        if (isAltPressed)
+        {
+            // Verificar las teclas numéricas del 0 al 9
+            for (int i = 0; i <= 9; i++)
+            {
+                if (Input.GetKey(i.ToString()))
+                {
+                    GetInformation(i);
+                    isAltPressed = false;
+                }
+            }
+        }
+    }
+
+    private void UsarBoton()
+    {
+        // Verificar si se presionó el boton
+        if (EmpezarMover)
+        {
+            // Verificar si se habilita el guardado
+            if (TerminarMover)
+            {
+                GetInformation(NumeroUsar);
+                TerminarMover = false;
+                EmpezarMover = false;
+                NumeroUsar = -1;
+            }
+        }
+    }
+
+    private void SaveInformation(int i)
+    {
+        if (GuardarBase.ContainsKey(i))
+        {
+            GuardarBase[i] = sumaRotacionBase;
+        }
+        else
+        {
+            GuardarBase.Add(i,sumaRotacionBase);
+        }
+
+        if (GuardarShoulder.ContainsKey(i))
+        {
+            GuardarShoulder[i] = sumaRotacionShoulder;
+        }
+        else
+        {
+            GuardarShoulder.Add(i, sumaRotacionShoulder);
+        }
+
+        if (GuardarElbow.ContainsKey(i))
+        {
+            GuardarElbow[i] = sumaRotacionElbow;
+        }
+        else
+        {
+            GuardarElbow.Add(i, sumaRotacionElbow);
+        }
+
+        if (GuardarWrist.ContainsKey(i))
+        {
+            GuardarWrist[i] = sumaRotacionWrist;
+        }
+        else
+        {
+            GuardarWrist.Add(i, sumaRotacionWrist);
+        }
+
+        if (GuardarEndEffector.ContainsKey(i))
+        {
+            GuardarEndEffector[i] = sumaRotacionEndEffector;
+        }
+        else
+        {
+            GuardarEndEffector.Add(i, sumaRotacionEndEffector);
+        }
+    }
+
+    private void GetInformation(int i)
+    {
+        if (GuardarBase.ContainsKey(i))
+        {
+            float value = GuardarBase[i];
+            Debug.Log("Base "+ i + " = " + value);
+            //MoverGuardado(value,sumaRotacionBase,Base,Base,LimiteNegativoBase,LimitePositivoBase,velocidadRotacionBase,-Base.up);
+        }
+        else
+        {
+            Debug.Log("no existe");
+        }
+
+        if (GuardarShoulder.ContainsKey(i))
+        {
+            float value = GuardarShoulder[i];
+            Debug.Log("Shoulder "+ i + " = " + value);
+        }
+        else
+        {
+            Debug.Log("no existe");
+        }
+
+        if (GuardarElbow.ContainsKey(i))
+        {
+            float value = GuardarElbow[i];
+            Debug.Log("Elbow "+ i + " = " + value);
+        }
+        else
+        {
+            Debug.Log("no existe");
+        }
+
+        if (GuardarWrist.ContainsKey(i))
+        {
+            float value = GuardarWrist[i];
+            Debug.Log("Wrist "+ i + " = " + value);
+        }
+        else
+        {
+            Debug.Log("no existe");
+        }
+
+        if (GuardarEndEffector.ContainsKey(i))
+        {
+            float value = GuardarEndEffector[i];
+            Debug.Log("EndEffector "+ i + " = " + value);
+        }
+        else
+        {
+            Debug.Log("no existe");
+        }
+    }
+
+    public void EmpezarAGuardar()
+    {
+        EmpezarGuardar = true;
+    }
+
+    public void NumeroAUsar(int i)
+    {
+        if(EmpezarGuardar || EmpezarMover)
+        {
+            NumeroUsar = i;
+        }
+    }
+
+    public void TerminarAGuardar()
+    {
+        if(0 < NumeroUsar && NumeroUsar < 10)
+        {
+            if(EmpezarGuardar)
+            {
+                TerminarGuardar = true;
+            }
+        }
+    }
+
+    public void EmpezarAMover()
+    {
+        EmpezarMover = true;
+    }
+
+    public void TerminarAMover()
+    {
+        if(-1 < NumeroUsar && NumeroUsar < 10)
+        {
+            if(EmpezarMover)
+            {
+                TerminarMover = true;
+            }
+            
+        }
+    }
+
+    private void MoverEje()
+    {
+        float movimiento = 0f;
+
+        // Verifica si se presiona la tecla positiva
+        if (Input.GetKey(KeyCode.Alpha1))
+        {
+            movimiento = 1f;
+        }
+
+        // Verifica si se presiona la tecla negativa
+        if (Input.GetKey(KeyCode.Alpha6))
+        {
+            movimiento = -1f;
+        }
+
+        // Mueve el objeto en el eje Y (o el eje que desees) según el valor de movimiento
+        transform.Translate(Vector3.up * movimiento * 5f * Time.deltaTime);
+    }
+
+    private void MoverEjeBoton()
+    {
+        float movimiento = 0f;
+
+        if (positivobotonZ)
+        {
+            movimiento = 1.0f;
+        }
+        if (negativobotonZ)
+        {
+            movimiento = -1.0f;
+        }
+
+        // Mueve el objeto en el eje Y (o el eje que desees) según el valor de movimiento
+        transform.Translate(Vector3.up * movimiento * 5f * Time.deltaTime);
+    }
+
+    private void MoverGuardado(float valor, float Suma, Transform puntoFijo, Transform objeto, float anguloLimiteNegativo, float anguloLimitePositivo, float VelocidadRotacion, Vector3 direccion)
+    {
+        
+        float direccionRotacion = 0.0f;
+
+        if (Suma < valor)
+        {
+            direccionRotacion = 1.0f;
+        }
+        else if (Suma > valor)
+        {
+            direccionRotacion = -1.0f;
+        }
+
+        if (direccionRotacion == 0.0f)
+        {
+            return;
+        }
+        // Calcular el ángulo de rotación
+        
+        // Realizar la rotación alrededor del punto fijo
+        while(Suma != valor)
+        {
+            float anguloRotacion = direccionRotacion * VelocidadRotacion * Time.deltaTime;
+            objeto.RotateAround(puntoFijo.position, direccion, anguloRotacion);
+            Suma += anguloRotacion;
+            if(direccionRotacion == 1.0f)
+            {
+                Suma = Mathf.Clamp(Suma, anguloLimiteNegativo, valor);
+            }
+            else
+            {
+                Suma = Mathf.Clamp(Suma, valor, anguloLimitePositivo);
+            }
+            
+        }
+        
     }
 }

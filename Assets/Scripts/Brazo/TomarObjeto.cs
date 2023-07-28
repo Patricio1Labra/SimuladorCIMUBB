@@ -48,6 +48,7 @@ public class TomarObjeto : MonoBehaviour
                     pickedObject = other.gameObject;
                     tomado = true;
                     podertomar = false;
+                    boton = true;
                 }
                 
             }
