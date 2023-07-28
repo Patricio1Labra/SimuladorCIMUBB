@@ -8,6 +8,11 @@ public class MenuPausa : MonoBehaviour
     [SerializeField] private GameObject ui;
     [SerializeField] private GameObject menuPausa;
 
+    void Start()
+    {
+        Time.timeScale = 0f;
+    }
+
     public void Pausa()
     {
         Time.timeScale = 0f;
