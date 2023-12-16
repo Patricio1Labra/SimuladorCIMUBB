@@ -202,11 +202,11 @@ public class MovimientoJointsIX : MonoBehaviour
             puntoFijo = puntoFijoElbow;
             objeto = Elbow;
         }
-
+        
         if (nombre == "Wrist")
         {
             Sumar = sumaRotacionWrist;
-            direccion = Wrist.up;
+            direccion = Wrist.forward;
             anguloLimitePositivo = LimitePositivoWrist;
             anguloLimiteNegativo = LimiteNegativoWrist;
             VelocidadRotacion = velocidadRotacionWrist;
@@ -217,7 +217,7 @@ public class MovimientoJointsIX : MonoBehaviour
         if (nombre == "EndEffector")
         {
             Sumar = sumaRotacionEndEffector;
-            direccion = EndEffector.up;
+            direccion = EndEffector.right;
             anguloLimitePositivo = LimitePositivoEndEffector;
             anguloLimiteNegativo = LimiteNegativoEndEffector;
             VelocidadRotacion = velocidadRotacionEndEffector;
